@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.api.e_commerce.dto.ItemCarritoDTO;
 import com.api.e_commerce.model.Pedido;
 import com.api.e_commerce.model.PedidoDetalle;
 import com.api.e_commerce.model.Producto;
@@ -31,38 +32,16 @@ public class PedidoService {
     @Autowired
     private ProductoService productoService;
 
-    // Clase helper para representar items del carrito
-    public static class ItemCarrito {
-        private Long productoId;
-        private Integer cantidad;
-
-        public ItemCarrito() {
-        }
-
-        public ItemCarrito(Long productoId, Integer cantidad) {
-            this.productoId = productoId;
-            this.cantidad = cantidad;
-        }
-
-        public Long getProductoId() {
-            return productoId;
-        }
-
-        public void setProductoId(Long productoId) {
-            this.productoId = productoId;
-        }
-
-        public Integer getCantidad() {
-            return cantidad;
-        }
-
-        public void setCantidad(Integer cantidad) {
-            this.cantidad = cantidad;
-        }
-    }
-
-    // Realizar checkout del carrito
-    public Pedido realizarCheckout(Long usuarioId, List<ItemCarrito> itemsCarrito) {
+    /**
+     * Realiza el checkout del carrito de compras.
+     * Valida el stock, crea el pedido y descuenta el inventario.
+     * 
+     * @param usuarioId    ID del usuario que realiza la compra
+     * @param itemsCarrito Lista de items a comprar
+     * @return El pedido creado
+     * @throws RuntimeException si no hay stock suficiente o el usuario no existe
+     */
+    public Pedido realizarCheckout(Long usuarioId, List<ItemCarritoDTO> itemsCarrito) {
         // Verificar que el usuario existe
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + usuarioId));
@@ -72,7 +51,7 @@ public class PedidoService {
         pedido.setUsuario(usuario);
 
         // Validar stock y crear detalles
-        for (ItemCarrito item : itemsCarrito) {
+        for (ItemCarritoDTO item : itemsCarrito) {
             // Verificar que hay stock suficiente
             if (!productoService.tieneStock(item.getProductoId(), item.getCantidad())) {
                 Producto producto = productoRepository.findById(item.getProductoId())
@@ -94,7 +73,7 @@ public class PedidoService {
         Pedido pedidoGuardado = pedidoRepository.save(pedido);
 
         // Descontar stock de todos los productos
-        for (ItemCarrito item : itemsCarrito) {
+        for (ItemCarritoDTO item : itemsCarrito) {
             productoService.descontarStock(item.getProductoId(), item.getCantidad());
         }
 
