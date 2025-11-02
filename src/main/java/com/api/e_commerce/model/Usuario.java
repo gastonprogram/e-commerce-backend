@@ -25,4 +25,16 @@ public class Usuario {
 
     @Column(nullable = false, length = 100)
     private String apellido;
+
+    public String getEmail() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getEmail() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public CharSequence getContrasena() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }
