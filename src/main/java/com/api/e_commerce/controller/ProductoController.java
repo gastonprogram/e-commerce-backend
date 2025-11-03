@@ -13,7 +13,7 @@ import com.api.e_commerce.service.ProductoService;
 
 @RestController
 @RequestMapping("/api/productos")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = { "http://localhost:5173/", "http://127.0.0.1:5173/" })
 public class ProductoController {
 
     @Autowired
@@ -90,7 +90,7 @@ public class ProductoController {
         try {
             // Obtener el email del usuario autenticado desde el token JWT
             String email = authentication.getName();
-            
+
             System.out.println("=== CREANDO PRODUCTO ===");
             System.out.println("Email usuario: " + email);
             System.out.println("Producto: " + producto.getName());
@@ -99,9 +99,9 @@ public class ProductoController {
 
             // Crear el producto usando el email del usuario autenticado
             Producto nuevoProducto = productoService.crearProductoSimple(producto, email);
-            
+
             System.out.println("Producto creado exitosamente con ID: " + nuevoProducto.getId());
-            
+
             return ResponseEntity.ok(nuevoProducto);
         } catch (Exception e) {
             System.err.println("ERROR al crear producto: " + e.getMessage());

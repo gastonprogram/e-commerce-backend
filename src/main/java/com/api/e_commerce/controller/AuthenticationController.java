@@ -1,6 +1,7 @@
 package com.api.e_commerce.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,19 +15,23 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/auth")
-//anotación de Lombok que genera automáticamente un constructor que incluye todos los campos marcados como final, es igual que usar @autowired 
+@CrossOrigin(origins = { "http://localhost:5173/", "http://127.0.0.1:5173/" })
+// anotación de Lombok que genera automáticamente un constructor que incluye
+// todos los campos marcados como final, es igual que usar @autowired
 @RequiredArgsConstructor
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
 
-    //http://localhost:8080/api/auth/register con metodo post http, enviar un body -> crear un usuario
+    // http://localhost:8080/api/auth/register con metodo post http, enviar un body
+    // -> crear un usuario
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authenticationService.register(request));
     }
 
-    //http://localhost:8080/api/auth/login con metodo post http, enviar un body -> loguear un usuario
+    // http://localhost:8080/api/auth/login con metodo post http, enviar un body ->
+    // loguear un usuario
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authenticationService.authenticate(request));

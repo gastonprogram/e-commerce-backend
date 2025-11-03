@@ -12,7 +12,7 @@ import com.api.e_commerce.service.CategoriaService;
 
 @RestController
 @RequestMapping("/api/categorias")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = { "http://localhost:5173/", "http://127.0.0.1:5173/" })
 public class CategoriaController {
 
     @Autowired

@@ -20,7 +20,7 @@ import com.api.e_commerce.service.PedidoService;
  */
 @RestController
 @RequestMapping("/api/pedidos")
-@CrossOrigin(origins = "*") // TODO: Configurar adecuadamente para producción
+@CrossOrigin(origins = { "http://localhost:5173/", "http://127.0.0.1:5173/" })
 public class PedidoController {
 
     @Autowired
