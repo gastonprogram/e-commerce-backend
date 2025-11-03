@@ -23,7 +23,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     public AuthController(AuthenticationManager authManager, JwtUtil jwtUtil,
-                          UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+            UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.authManager = authManager;
         this.jwtUtil = jwtUtil;
         this.usuarioRepository = usuarioRepository;
@@ -36,7 +36,7 @@ public class AuthController {
         if (usuarioRepository.existsByEmail(nuevoUsuario.getEmail())) {
             return Map.of("error", "El email ya está registrado");
         }
-        nuevoUsuario.setContrasena(passwordEncoder.encode(nuevoUsuario.getContrasena()));
+        nuevoUsuario.setPassword(passwordEncoder.encode(nuevoUsuario.getPassword()));
         usuarioRepository.save(nuevoUsuario);
         return Map.of("mensaje", "Usuario registrado con éxito");
     }
@@ -49,10 +49,14 @@ public class AuthController {
             String password = datos.get("contrasena");
 
             Authentication auth = authManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
-            );
+                    new UsernamePasswordAuthenticationToken(username, password));
 
-            String token = jwtUtil.generarToken(username);
+            // Obtener los roles del usuario autenticado
+            var roles = auth.getAuthorities().stream()
+                    .map(authority -> authority.getAuthority().replace("ROLE_", ""))
+                    .collect(java.util.stream.Collectors.toSet());
+
+            String token = jwtUtil.generateToken(username, roles);
             return Map.of("token", token);
 
         } catch (AuthenticationException e) {
