@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.api.e_commerce.model.Producto;
@@ -55,19 +56,57 @@ public class ProductoController {
         return ResponseEntity.ok(productos);
     }
 
-    // POST /api/productos?usuarioId={id}&categoriasIds={id1,id2,id3} - Crear nuevo
-    // producto
-    // (publicación) con múltiples categorías
+    /**
+     * POST /api/productos
+     * Crear nuevo producto
+     * El usuarioId se obtiene automáticamente del token JWT (usuario autenticado)
+     * 
+     * Ejemplo de JSON:
+     * {
+     * "name": "Mouse Gamer",
+     * "description": "Mouse RGB con 7 botones",
+     * "price": 50.0,
+     * "stock": 15,
+     * "image": "https://example.com/mouse.jpg",
+     * "categorias": [
+     * {"id": 1}
+     * ]
+     * }
+     * 
+     * O con una sola categoría:
+     * {
+     * "name": "Mouse Gamer",
+     * "description": "Mouse RGB con 7 botones",
+     * "price": 50.0,
+     * "stock": 15,
+     * "image": "https://example.com/mouse.jpg",
+     * "categorias": [{"id": 1}]
+     * }
+     */
     @PostMapping
-    public ResponseEntity<Producto> crearProducto(
+    public ResponseEntity<?> crearProducto(
             @RequestBody Producto producto,
-            @RequestParam Long usuarioId,
-            @RequestParam List<Long> categoriasIds) {
+            Authentication authentication) {
         try {
-            Producto nuevoProducto = productoService.crearProducto(producto, usuarioId, categoriasIds);
+            // Obtener el email del usuario autenticado desde el token JWT
+            String email = authentication.getName();
+            
+            System.out.println("=== CREANDO PRODUCTO ===");
+            System.out.println("Email usuario: " + email);
+            System.out.println("Producto: " + producto.getName());
+            System.out.println("Precio: " + producto.getPrice());
+            System.out.println("Stock: " + producto.getStock());
+
+            // Crear el producto usando el email del usuario autenticado
+            Producto nuevoProducto = productoService.crearProductoSimple(producto, email);
+            
+            System.out.println("Producto creado exitosamente con ID: " + nuevoProducto.getId());
+            
             return ResponseEntity.ok(nuevoProducto);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            System.err.println("ERROR al crear producto: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
 
