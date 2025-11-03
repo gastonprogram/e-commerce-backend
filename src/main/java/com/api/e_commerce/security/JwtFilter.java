@@ -1,53 +1,60 @@
 package com.api.e_commerce.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
+    @Autowired
+    private JwtUtil jwtUtil;
 
-    private final JwtUtil jwtUtil;
-    private final UserDetailsService userDetailsService;
-
-    public JwtFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
-        this.jwtUtil = jwtUtil;
-        this.userDetailsService = userDetailsService;
-    }
-
+    /**
+     * Este método se ejecuta en cada petición HTTP para verificar si existe un
+     * token JWT válido.
+     * Dónde se utiliza:
+     * - Se configura en `SecurityConfig` para que se ejecute antes que el filtro de
+     * autenticación de Spring Security.
+     * - Intercepta todas las peticiones entrantes a la API.
+     */
+    @SuppressWarnings("null")
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        // 1. Obtiene el encabezado "Authorization" de la petición.
+        String header = request.getHeader("Authorization");
 
-        final String authHeader = request.getHeader("Authorization");
-        String username = null;
-        String jwt = null;
+        // 2. Verifica si el encabezado existe y si comienza con "Bearer ".
+        if (header != null && header.startsWith("Bearer ")) {
+            // extrae la parte del JWT de la cabecera de autorización, eliminando el prefijo
+            // "Bearer ".
+            String token = header.substring(7);
+            // 4. Valida el token usando `jwtUtil.validateToken()`.
+            if (jwtUtil.validateToken(token)) {
+                // 5. Si el token es válido, extrae el nombre de usuario y los roles del token.
+                String username = jwtUtil.getUsername(token);
+                Set<String> roles = jwtUtil.getRoles(token);
 
-        // Verificar si el header tiene "Bearer <token>"
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            jwt = authHeader.substring(7);
-            username = jwtUtil.obtenerUsername(jwt);
-        }
-
-        // Si hay usuario y no está autenticado aún
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-            if (jwtUtil.validarToken(jwt)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                // transformar el conjunto de roles (cadenas de texto) en la lista de
+                // autoridades (permisos) que Spring Security necesita para verificar si el
+                // usuario tiene acceso a un recurso.
+                var authorities = roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+                // usuario ya autenticado
+                // crea un objeto de autenticación con los detalles del usuario y sus roles
+                var auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
+                // 8. Finalmente, pasa la petición al siguiente filtro en la cadena.
+                SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }
 

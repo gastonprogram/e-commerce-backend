@@ -1,5 +1,6 @@
 package com.api.e_commerce.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -54,7 +55,76 @@ public class ProductoService {
         return productoRepository.findByUsuarioId(usuarioId);
     }
 
-    // Crear nuevo producto (publicación)
+    /**
+     * Crear nuevo producto de forma simple - método principal
+     * Las categorías vienen en el JSON del producto
+     * 
+     * @param producto Datos del producto a crear (con categorías incluidas)
+     * @param email    Email del usuario autenticado (obtenido del JWT)
+     * @return El producto creado
+     */
+    public Producto crearProductoSimple(Producto producto, String email) {
+        // Buscar el usuario por email (obtenido del token JWT)
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
+
+        producto.setUsuario(usuario);
+
+        // Si el producto tiene categorías en el JSON, validar que existan
+        if (producto.getCategorias() != null && !producto.getCategorias().isEmpty()) {
+            // Crear una lista temporal para evitar ConcurrentModificationException
+            List<Long> categoriaIds = new ArrayList<>();
+            for (Categoria categoria : producto.getCategorias()) {
+                if (categoria.getId() != null) {
+                    categoriaIds.add(categoria.getId());
+                }
+            }
+            
+            // Ahora crear el Set con las categorías validadas desde la BD
+            Set<Categoria> categoriasValidadas = new HashSet<>();
+            for (Long categoriaId : categoriaIds) {
+                Categoria categoriaDB = categoriaRepository.findById(categoriaId)
+                        .orElseThrow(
+                                () -> new RuntimeException("Categoría no encontrada con id: " + categoriaId));
+                categoriasValidadas.add(categoriaDB);
+            }
+            producto.setCategorias(categoriasValidadas);
+        }
+
+        return productoRepository.save(producto);
+    }
+
+    /**
+     * Crear nuevo producto usando el email del usuario autenticado
+     * 
+     * @param producto      Datos del producto a crear
+     * @param email         Email del usuario autenticado (obtenido del JWT)
+     * @param categoriasIds Lista de IDs de categorías (opcional)
+     * @return El producto creado
+     */
+    public Producto crearProductoPorEmail(Producto producto, String email, List<Long> categoriasIds) {
+        // Buscar el usuario por email (obtenido del token JWT)
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
+
+        // Verificar que las categorías existen y obtenerlas (si se proporcionaron)
+        Set<Categoria> categorias = new HashSet<>();
+        if (categoriasIds != null && !categoriasIds.isEmpty()) {
+            for (Long categoriaId : categoriasIds) {
+                Categoria categoria = categoriaRepository.findById(categoriaId)
+                        .orElseThrow(() -> new RuntimeException("Categoría no encontrada con id: " + categoriaId));
+                categorias.add(categoria);
+            }
+        }
+
+        producto.setUsuario(usuario);
+        producto.setCategorias(categorias);
+
+        return productoRepository.save(producto);
+    }
+
+    // Crear nuevo producto (publicación) - MÉTODO ANTIGUO mantenido para
+    // compatibilidad
     public Producto crearProducto(Producto producto, Long usuarioId, List<Long> categoriasIds) {
         // Verificar que el usuario existe
         Usuario usuario = usuarioRepository.findById(usuarioId)

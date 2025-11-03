@@ -1,13 +1,20 @@
 package com.api.e_commerce.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Objects;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "productos")
 public class Producto {
@@ -42,4 +49,18 @@ public class Producto {
     @JoinColumn(name = "usuario_id", nullable = false)
     @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "contrasena" })
     private Usuario usuario;
+
+    // Override equals y hashCode para evitar problemas con lazy loading
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Producto producto = (Producto) o;
+        return Objects.equals(id, producto.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }
