@@ -7,6 +7,7 @@ services:
   app:
     # Construye la imagen usando el Dockerfile en el directorio actual (.)
     build: .
+    container_name: ecommerce-backend-app
     # Mapea el puerto 8080 del contenedor al puerto 8080 del host
     # formato: "puerto_host:puerto_contenedor"
     ports:
@@ -17,34 +18,30 @@ services:
       # - db: nombre del servicio (Docker resolverá este nombre automáticamente)
       # - 3306: puerto estándar de MySQL
       # - Incluye configuraciones adicionales como en application.properties
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/ecommerce_db?useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/ecommerce_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
       # Usuario de MySQL (root en este caso)
       SPRING_DATASOURCE_USERNAME: root
       # Contraseña de MySQL (vacía como en application.properties)
-      SPRING_DATASOURCE_PASSWORD: 
+      SPRING_DATASOURCE_PASSWORD: root
       # Configuraciones adicionales de JPA/Hibernate
-      SPRING_JPA_HIBERNATE_DDL-AUTO: update
-      SPRING_JPA_SHOW-SQL: "true"
-      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
-      # Configuración JWT
-      JWT_SECRET: miClaveSecretaDe32CaracteresParaJWT2025
-      JWT_EXPIRATION: "86400000"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      # SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect  # opcional, no necesario en Hibernate 6
     # Especifica que este servicio depende de 'db'
     # Docker Compose esperará a que 'db' esté listo antes de iniciar 'app'
     depends_on:
-      - db
-    # Conecta este servicio a la red 'spring-mysql'
-    networks:
-      - spring-mysql
+      db:
+        condition: service_healthy
+    restart: on-failure:5
 
   # Servicio de base de datos MySQL
   db:
     # Usa la imagen oficial de MySQL versión 8.0 de Docker Hub
     image: mysql:8.0
+    container_name: ecommerce-db
     # Mapea el puerto 3306 de MySQL para acceso desde el host
     ports:
-      - "3306:3306"
+      - "3306:3306"            # cambia a "3307:3306" si 3306 está ocupado
     # Variables de entorno para configurar MySQL
     environment:
       # Nombre de la base de datos que se creará automáticamente
@@ -55,9 +52,12 @@ services:
     # Esto permite que los datos sobrevivan aunque el contenedor se elimine
     volumes:
       - mysql-data:/var/lib/mysql
-    # Conecta MySQL a la misma red que la aplicación
-    networks:
-      - spring-mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -proot || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
 
 # Define los volúmenes nombrados que utilizará Docker
 volumes:
