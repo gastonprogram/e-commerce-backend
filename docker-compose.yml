@@ -1,0 +1,73 @@
+# Especifica la versión de Docker Compose a utilizar (3.8 es una versión moderna con todas las características necesarias)
+version: '3.8'
+
+# Define los servicios (contenedores) que componen nuestra aplicación
+services:
+  # Servicio de la aplicación Spring Boot (backend)
+  app:
+    # Construye la imagen usando el Dockerfile en el directorio actual (.)
+    build: .
+    # Mapea el puerto 8080 del contenedor al puerto 8080 del host
+    # formato: "puerto_host:puerto_contenedor"
+    ports:
+      - "8080:8080"
+    # Define variables de entorno que usará Spring Boot para conectarse a MySQL
+    environment:
+      # URL de conexión a MySQL:
+      # - db: nombre del servicio (Docker resolverá este nombre automáticamente)
+      # - 3306: puerto estándar de MySQL
+      # - Incluye configuraciones adicionales como en application.properties
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/ecommerce_db?useSSL=false&serverTimezone=UTC
+      # Usuario de MySQL (root en este caso)
+      SPRING_DATASOURCE_USERNAME: root
+      # Contraseña de MySQL (vacía como en application.properties)
+      SPRING_DATASOURCE_PASSWORD: 
+      # Configuraciones adicionales de JPA/Hibernate
+      SPRING_JPA_HIBERNATE_DDL-AUTO: update
+      SPRING_JPA_SHOW-SQL: "true"
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
+      # Configuración JWT
+      JWT_SECRET: miClaveSecretaDe32CaracteresParaJWT2025
+      JWT_EXPIRATION: "86400000"
+    # Especifica que este servicio depende de 'db'
+    # Docker Compose esperará a que 'db' esté listo antes de iniciar 'app'
+    depends_on:
+      - db
+    # Conecta este servicio a la red 'spring-mysql'
+    networks:
+      - spring-mysql
+
+  # Servicio de base de datos MySQL
+  db:
+    # Usa la imagen oficial de MySQL versión 8.0 de Docker Hub
+    image: mysql:8.0
+    # Mapea el puerto 3306 de MySQL para acceso desde el host
+    ports:
+      - "3306:3306"
+    # Variables de entorno para configurar MySQL
+    environment:
+      # Nombre de la base de datos que se creará automáticamente
+      MYSQL_DATABASE: ecommerce_db
+      # Contraseña del usuario root de MySQL
+      MYSQL_ROOT_PASSWORD: root
+    # Configuración de volumen para persistencia de datos
+    # Esto permite que los datos sobrevivan aunque el contenedor se elimine
+    volumes:
+      - mysql-data:/var/lib/mysql
+    # Conecta MySQL a la misma red que la aplicación
+    networks:
+      - spring-mysql
+
+# Define los volúmenes nombrados que utilizará Docker
+volumes:
+  # Volumen para almacenar los datos de MySQL de forma persistente
+  # Docker gestiona este volumen automáticamente
+  mysql-data:
+
+# Define las redes personalizadas
+networks:
+  # Red 'spring-mysql' para aislar y permitir la comunicación entre los contenedores
+  spring-mysql:
+    # Usa el driver bridge (el estándar para comunicación entre contenedores en un mismo host)
+    driver: bridge
