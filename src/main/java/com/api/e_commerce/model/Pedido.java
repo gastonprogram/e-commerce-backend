@@ -22,7 +22,7 @@ public class Pedido {
     // Usuario que realizó el pedido
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "usuario_id", nullable = false)
-    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "pedidos", "contrasena" })
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "pedidos", "password" })
     private Usuario usuario;
 
     // Fecha y hora del pedido

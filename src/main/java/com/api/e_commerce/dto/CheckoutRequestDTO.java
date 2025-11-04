@@ -8,9 +8,6 @@ import java.util.List;
  */
 public class CheckoutRequestDTO {
 
-    // ID del usuario que está realizando la compra
-    private Long usuarioId;
-
     // Lista de items (productos) que el usuario quiere comprar
     private List<ItemCarritoDTO> items;
 
@@ -19,18 +16,8 @@ public class CheckoutRequestDTO {
     }
 
     // Constructor con parámetros para facilitar la creación en tests
-    public CheckoutRequestDTO(Long usuarioId, List<ItemCarritoDTO> items) {
-        this.usuarioId = usuarioId;
+    public CheckoutRequestDTO(List<ItemCarritoDTO> items) {
         this.items = items;
-    }
-
-    // Getters y Setters
-    public Long getUsuarioId() {
-        return usuarioId;
-    }
-
-    public void setUsuarioId(Long usuarioId) {
-        this.usuarioId = usuarioId;
     }
 
     public List<ItemCarritoDTO> getItems() {

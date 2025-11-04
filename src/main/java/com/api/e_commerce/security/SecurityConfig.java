@@ -50,20 +50,18 @@ public class SecurityConfig {
                         // Solo los ADMIN pueden acceder a rutas que empiecen con /api/admin
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                        // Solo los ADMIN pueden eliminar productos
-                        .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
-
                         // ========== ENDPOINTS PARA USUARIOS AUTENTICADOS ==========
                         // Usuarios autenticados pueden crear y editar productos
-                        .requestMatchers(HttpMethod.POST, "/api/productos").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/productos/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/productos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
 
                         // Usuarios autenticados pueden gestionar pedidos
                         .requestMatchers("/api/pedidos/**").authenticated()
 
                         // Usuarios autenticados pueden gestionar categorías
-                        .requestMatchers(HttpMethod.POST, "/api/categorias").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/categorias/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/categorias").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/categorias/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/categorias/**").hasRole("ADMIN")
 
                         // ========== CUALQUIER OTRA RUTA ==========

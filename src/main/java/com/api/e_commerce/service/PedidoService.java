@@ -41,10 +41,10 @@ public class PedidoService {
      * @return El pedido creado
      * @throws RuntimeException si no hay stock suficiente o el usuario no existe
      */
-    public Pedido realizarCheckout(Long usuarioId, List<ItemCarritoDTO> itemsCarrito) {
+    public Pedido realizarCheckout(String email, List<ItemCarritoDTO> itemsCarrito) {
         // Verificar que el usuario existe
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + usuarioId));
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
 
         // Crear el pedido
         Pedido pedido = new Pedido();

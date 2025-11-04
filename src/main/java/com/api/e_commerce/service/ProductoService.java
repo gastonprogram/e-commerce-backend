@@ -15,6 +15,9 @@ import com.api.e_commerce.model.Categoria;
 import com.api.e_commerce.model.Usuario;
 import com.api.e_commerce.repository.ProductoRepository;
 import com.api.e_commerce.repository.CategoriaRepository;
+import com.api.e_commerce.repository.PedidoDetalleRepository;
+import com.api.e_commerce.exception.ProductoEnPedidosException;
+import com.api.e_commerce.model.PedidoDetalle;
 import com.api.e_commerce.repository.UsuarioRepository;
 
 @Service
@@ -26,6 +29,9 @@ public class ProductoService {
 
     @Autowired
     private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private PedidoDetalleRepository pedidoDetalleRepository;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -64,6 +70,9 @@ public class ProductoService {
      * @return El producto creado
      */
     public Producto crearProductoSimple(Producto producto, String email) {
+        // Asegurarnos de que no intentamos hacer merge de una entidad con id
+        // proporcionado por el cliente (evita errores tipo "Row was updated or deleted...")
+        producto.setId(null);
         // Buscar el usuario por email (obtenido del token JWT)
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
@@ -72,23 +81,27 @@ public class ProductoService {
 
         // Si el producto tiene categorías en el JSON, validar que existan
         if (producto.getCategorias() != null && !producto.getCategorias().isEmpty()) {
-            // Crear una lista temporal para evitar ConcurrentModificationException
+            // Extraer ids y recuperar entidades gestionadas desde la base
             List<Long> categoriaIds = new ArrayList<>();
             for (Categoria categoria : producto.getCategorias()) {
                 if (categoria.getId() != null) {
                     categoriaIds.add(categoria.getId());
                 }
             }
-            
-            // Ahora crear el Set con las categorías validadas desde la BD
+
             Set<Categoria> categoriasValidadas = new HashSet<>();
             for (Long categoriaId : categoriaIds) {
                 Categoria categoriaDB = categoriaRepository.findById(categoriaId)
-                        .orElseThrow(
-                                () -> new RuntimeException("Categoría no encontrada con id: " + categoriaId));
+                        .orElseThrow(() -> new RuntimeException("Categoría no encontrada con id: " + categoriaId));
                 categoriasValidadas.add(categoriaDB);
             }
+
+            // Asignar el conjunto gestionado al producto (evita problemas de entidades detached)
             producto.setCategorias(categoriasValidadas);
+            // Mantener la relación bidireccional: agregar el producto a la colección de cada categoría
+            for (Categoria categoriaDB : categoriasValidadas) {
+                categoriaDB.getProductos().add(producto);
+            }
         }
 
         return productoRepository.save(producto);
@@ -119,6 +132,10 @@ public class ProductoService {
 
         producto.setUsuario(usuario);
         producto.setCategorias(categorias);
+        // mantener bidireccional
+        for (Categoria c : categorias) {
+            c.getProductos().add(producto);
+        }
 
         return productoRepository.save(producto);
     }
@@ -140,7 +157,10 @@ public class ProductoService {
 
         producto.setUsuario(usuario);
         producto.setCategorias(categorias);
-
+        // mantener bidireccional: agregar el producto al set de cada categoría
+        for (Categoria c : categorias) {
+            c.getProductos().add(producto);
+        }
         return productoRepository.save(producto);
     }
 
@@ -243,6 +263,12 @@ public class ProductoService {
     public void eliminarProducto(Long id) {
         if (!productoRepository.existsById(id)) {
             throw new RuntimeException("Producto no encontrado con id: " + id);
+        }
+
+        // Antes de eliminar, comprobar si existen detalles de pedido que referencien este producto
+        List<PedidoDetalle> detalles = pedidoDetalleRepository.findByProductoId(id);
+        if (detalles != null && !detalles.isEmpty()) {
+            throw new ProductoEnPedidosException();
         }
 
         productoRepository.deleteById(id);

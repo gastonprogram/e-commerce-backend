@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.api.e_commerce.dto.CheckoutRequestDTO;
@@ -45,10 +46,14 @@ public class PedidoController {
      *         Request)
      */
     @PostMapping("/checkout")
-    public ResponseEntity<PedidoResponseDTO> realizarCheckout(@RequestBody CheckoutRequestDTO request) {
+    public ResponseEntity<PedidoResponseDTO> realizarCheckout(
+            @RequestBody CheckoutRequestDTO request,
+            Authentication authentication) {
         try {
             // Procesar el checkout usando el servicio
-            Pedido pedido = pedidoService.realizarCheckout(request.getUsuarioId(), request.getItems());
+            String email = authentication.getName();
+
+            Pedido pedido = pedidoService.realizarCheckout(email, request.getItems());
 
             // Convertir la entidad a DTO para la respuesta
             PedidoResponseDTO response = PedidoMapper.toResponseDTO(pedido);

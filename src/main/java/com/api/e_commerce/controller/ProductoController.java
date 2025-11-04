@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -178,10 +179,13 @@ public class ProductoController {
     // DELETE /api/productos/{id} - Eliminar producto (cualquier usuario
     // autenticado)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarProducto(@PathVariable Long id) {
+    public ResponseEntity<?> eliminarProducto(@PathVariable Long id) {
         try {
             productoService.eliminarProducto(id);
             return ResponseEntity.noContent().build();
+        } catch (com.api.e_commerce.exception.ProductoEnPedidosException ex) {
+            // Devolver 409 Conflict con los detalles de pedido que impiden la eliminación
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
