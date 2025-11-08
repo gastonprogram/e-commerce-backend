@@ -1,13 +1,14 @@
 package com.api.e_commerce.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.api.e_commerce.dto.ItemCarritoDTO;
+import com.api.e_commerce.dto.pedido.ItemCarritoDTO;
+import com.api.e_commerce.dto.pedido.PedidoMapper;
+import com.api.e_commerce.dto.pedido.PedidoResponseDTO;
 import com.api.e_commerce.model.Pedido;
 import com.api.e_commerce.model.PedidoDetalle;
 import com.api.e_commerce.model.Producto;
@@ -36,15 +37,15 @@ public class PedidoService {
      * Realiza el checkout del carrito de compras.
      * Valida el stock, crea el pedido y descuenta el inventario.
      * 
-     * @param usuarioId    ID del usuario que realiza la compra
+     * @param email        Email del usuario que realiza la compra
      * @param itemsCarrito Lista de items a comprar
-     * @return El pedido creado
+     * @return El pedido creado como DTO
      * @throws RuntimeException si no hay stock suficiente o el usuario no existe
      */
-    public Pedido realizarCheckout(Long usuarioId, List<ItemCarritoDTO> itemsCarrito) {
+    public PedidoResponseDTO realizarCheckout(String email, List<ItemCarritoDTO> itemsCarrito) {
         // Verificar que el usuario existe
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + usuarioId));
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
 
         // Crear el pedido
         Pedido pedido = new Pedido();
@@ -77,21 +78,13 @@ public class PedidoService {
             productoService.descontarStock(item.getProductoId(), item.getCantidad());
         }
 
-        return pedidoGuardado;
-    }
-
-    // Obtener pedidos de un usuario
-    public List<Pedido> obtenerPedidosPorUsuario(Long usuarioId) {
-        return pedidoRepository.findByUsuarioIdOrderByFechaPedidoDesc(usuarioId);
+        return PedidoMapper.toResponseDTO(pedidoGuardado);
     }
 
     // Obtener pedido por ID
-    public Optional<Pedido> obtenerPedidoPorId(Long id) {
-        return pedidoRepository.findById(id);
-    }
-
-    // Obtener todos los pedidos
-    public List<Pedido> obtenerTodosLosPedidos() {
-        return pedidoRepository.findAll();
+    public PedidoResponseDTO obtenerPedidoPorId(Long id) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado con id: " + id));
+        return PedidoMapper.toResponseDTO(pedido);
     }
 }

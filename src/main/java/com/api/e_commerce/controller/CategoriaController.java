@@ -1,18 +1,19 @@
 package com.api.e_commerce.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.api.e_commerce.model.Categoria;
+import com.api.e_commerce.dto.categoria.CategoriaCreateDTO;
+import com.api.e_commerce.dto.categoria.CategoriaDTO;
+import com.api.e_commerce.dto.categoria.CategoriaUpdateDTO;
 import com.api.e_commerce.service.CategoriaService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/categorias")
-@CrossOrigin(origins = "*")
 public class CategoriaController {
 
     @Autowired
@@ -20,24 +21,27 @@ public class CategoriaController {
 
     // GET /api/categorias - Obtener todas las categorías ordenadas alfabéticamente
     @GetMapping
-    public ResponseEntity<List<Categoria>> obtenerTodasLasCategorias() {
-        List<Categoria> categorias = categoriaService.obtenerTodasLasCategorias();
+    public ResponseEntity<List<CategoriaDTO>> obtenerTodasLasCategorias() {
+        List<CategoriaDTO> categorias = categoriaService.obtenerTodasLasCategorias();
         return ResponseEntity.ok(categorias);
     }
 
     // GET /api/categorias/{id} - Obtener categoría por ID
     @GetMapping("/{id}")
-    public ResponseEntity<Categoria> obtenerCategoriaPorId(@PathVariable Long id) {
-        Optional<Categoria> categoria = categoriaService.obtenerCategoriaPorId(id);
-        return categoria.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<CategoriaDTO> obtenerCategoriaPorId(@PathVariable Long id) {
+        try {
+            CategoriaDTO categoria = categoriaService.obtenerCategoriaPorId(id);
+            return ResponseEntity.ok(categoria);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     // POST /api/categorias - Crear nueva categoría
     @PostMapping
-    public ResponseEntity<Categoria> crearCategoria(@RequestBody Categoria categoria) {
+    public ResponseEntity<CategoriaDTO> crearCategoria(@Valid @RequestBody CategoriaCreateDTO categoriaDTO) {
         try {
-            Categoria nuevaCategoria = categoriaService.crearCategoria(categoria);
+            CategoriaDTO nuevaCategoria = categoriaService.crearCategoria(categoriaDTO);
             return ResponseEntity.ok(nuevaCategoria);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
@@ -46,9 +50,11 @@ public class CategoriaController {
 
     // PUT /api/categorias/{id} - Actualizar categoría
     @PutMapping("/{id}")
-    public ResponseEntity<Categoria> actualizarCategoria(@PathVariable Long id, @RequestBody Categoria categoria) {
+    public ResponseEntity<CategoriaDTO> actualizarCategoria(
+            @PathVariable Long id,
+            @Valid @RequestBody CategoriaUpdateDTO categoriaDTO) {
         try {
-            Categoria categoriaActualizada = categoriaService.actualizarCategoria(id, categoria);
+            CategoriaDTO categoriaActualizada = categoriaService.actualizarCategoria(id, categoriaDTO);
             return ResponseEntity.ok(categoriaActualizada);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();

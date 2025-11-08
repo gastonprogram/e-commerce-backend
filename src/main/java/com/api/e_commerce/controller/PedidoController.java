@@ -1,26 +1,20 @@
 package com.api.e_commerce.controller;
 
-import java.util.List;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import com.api.e_commerce.dto.CheckoutRequestDTO;
-import com.api.e_commerce.dto.PedidoResponseDTO;
-import com.api.e_commerce.dto.PedidoMapper;
-import com.api.e_commerce.model.Pedido;
+import com.api.e_commerce.dto.pedido.CheckoutRequestDTO;
+import com.api.e_commerce.dto.pedido.PedidoResponseDTO;
 import com.api.e_commerce.service.PedidoService;
 
 /**
  * Controlador REST para gestionar pedidos.
- * Maneja las operaciones de checkout, consulta de pedidos individuales y
- * listado completo.
+ * Maneja las operaciones de checkout
  */
 @RestController
 @RequestMapping("/api/pedidos")
-@CrossOrigin(origins = "*") // TODO: Configurar adecuadamente para producción
 public class PedidoController {
 
     @Autowired
@@ -45,15 +39,14 @@ public class PedidoController {
      *         Request)
      */
     @PostMapping("/checkout")
-    public ResponseEntity<PedidoResponseDTO> realizarCheckout(@RequestBody CheckoutRequestDTO request) {
+    public ResponseEntity<PedidoResponseDTO> realizarCheckout(
+            @RequestBody CheckoutRequestDTO request,
+            Authentication authentication) {
         try {
             // Procesar el checkout usando el servicio
-            Pedido pedido = pedidoService.realizarCheckout(request.getUsuarioId(), request.getItems());
-
-            // Convertir la entidad a DTO para la respuesta
-            PedidoResponseDTO response = PedidoMapper.toResponseDTO(pedido);
-
-            return ResponseEntity.ok(response);
+            String email = authentication.getName();
+            PedidoResponseDTO pedido = pedidoService.realizarCheckout(email, request.getItems());
+            return ResponseEntity.ok(pedido);
         } catch (RuntimeException e) {
             // Si hay algún error (stock insuficiente, usuario no existe, etc.)
             return ResponseEntity.badRequest().build();
@@ -69,26 +62,11 @@ public class PedidoController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<PedidoResponseDTO> obtenerPedidoPorId(@PathVariable Long id) {
-        Optional<Pedido> pedido = pedidoService.obtenerPedidoPorId(id);
-
-        // Si el pedido existe, lo convertimos a DTO y lo devolvemos
-        return pedido.map(p -> ResponseEntity.ok(PedidoMapper.toResponseDTO(p)))
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    /**
-     * GET /api/pedidos
-     * Obtiene todos los pedidos del sistema (para administradores).
-     * 
-     * @return ResponseEntity con lista de todos los pedidos (200 OK)
-     */
-    @GetMapping
-    public ResponseEntity<List<PedidoResponseDTO>> obtenerTodosLosPedidos() {
-        List<Pedido> pedidos = pedidoService.obtenerTodosLosPedidos();
-
-        // Convertir la lista de entidades a lista de DTOs
-        List<PedidoResponseDTO> response = PedidoMapper.toResponseDTOList(pedidos);
-
-        return ResponseEntity.ok(response);
+        try {
+            PedidoResponseDTO pedido = pedidoService.obtenerPedidoPorId(id);
+            return ResponseEntity.ok(pedido);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

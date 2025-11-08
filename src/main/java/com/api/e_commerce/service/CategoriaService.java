@@ -1,7 +1,6 @@
 package com.api.e_commerce.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,6 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.api.e_commerce.model.Categoria;
 import com.api.e_commerce.repository.CategoriaRepository;
+import com.api.e_commerce.dto.categoria.CategoriaCreateDTO;
+import com.api.e_commerce.dto.categoria.CategoriaDTO;
+import com.api.e_commerce.dto.categoria.CategoriaMapper;
+import com.api.e_commerce.dto.categoria.CategoriaUpdateDTO;
 
 @Service
 @Transactional
@@ -17,40 +20,48 @@ public class CategoriaService {
     @Autowired
     private CategoriaRepository categoriaRepository;
 
-    // Obtener todas las categorías ordenadas alfabéticamente (para home)
-    public List<Categoria> obtenerTodasLasCategorias() {
-        return categoriaRepository.findAllByOrderByNameAsc();
+    @Autowired
+    private CategoriaMapper categoriaMapper;
+
+    // Obtener todas las categorías ordenadas alfabéticamente
+    public List<CategoriaDTO> obtenerTodasLasCategorias() {
+        List<Categoria> categorias = categoriaRepository.findAllByOrderByNameAsc();
+        return categoriaMapper.toDTOList(categorias);
     }
 
     // Obtener categoría por ID
-    public Optional<Categoria> obtenerCategoriaPorId(Long id) {
-        return categoriaRepository.findById(id);
+    public CategoriaDTO obtenerCategoriaPorId(Long id) {
+        Categoria categoria = categoriaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada con id: " + id));
+        return categoriaMapper.toDTO(categoria);
     }
 
     // Crear nueva categoría
-    public Categoria crearCategoria(Categoria categoria) {
+    public CategoriaDTO crearCategoria(CategoriaCreateDTO dto) {
         // Verificar que no existe una categoría con el mismo nombre
-        if (categoriaRepository.existsByName(categoria.getName())) {
-            throw new RuntimeException("Ya existe una categoría con el nombre: " + categoria.getName());
+        if (categoriaRepository.existsByName(dto.getName())) {
+            throw new RuntimeException("Ya existe una categoría con el nombre: " + dto.getName());
         }
-        return categoriaRepository.save(categoria);
+
+        Categoria categoria = categoriaMapper.toEntity(dto);
+        Categoria categoriaGuardada = categoriaRepository.save(categoria);
+        return categoriaMapper.toDTO(categoriaGuardada);
     }
 
     // Actualizar categoría
-    public Categoria actualizarCategoria(Long id, Categoria categoriaActualizada) {
-        return categoriaRepository.findById(id)
-                .map(categoria -> {
-                    // Verificar que no existe otra categoría con el mismo nombre
-                    if (!categoria.getName().equals(categoriaActualizada.getName()) &&
-                            categoriaRepository.existsByName(categoriaActualizada.getName())) {
-                        throw new RuntimeException(
-                                "Ya existe una categoría con el nombre: " + categoriaActualizada.getName());
-                    }
-
-                    categoria.setName(categoriaActualizada.getName());
-                    return categoriaRepository.save(categoria);
-                })
+    public CategoriaDTO actualizarCategoria(Long id, CategoriaUpdateDTO dto) {
+        Categoria categoria = categoriaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada con id: " + id));
+
+        // Verificar que no existe otra categoría con el mismo nombre
+        if (!categoria.getName().equals(dto.getName()) &&
+                categoriaRepository.existsByName(dto.getName())) {
+            throw new RuntimeException("Ya existe una categoría con el nombre: " + dto.getName());
+        }
+
+        categoriaMapper.updateEntity(categoria, dto);
+        Categoria categoriaActualizada = categoriaRepository.save(categoria);
+        return categoriaMapper.toDTO(categoriaActualizada);
     }
 
     // Eliminar categoría

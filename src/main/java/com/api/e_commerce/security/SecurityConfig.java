@@ -39,32 +39,35 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Habilita CORS
                 .authorizeHttpRequests(auth -> auth
                         // ========== ENDPOINTS PÚBLICOS (sin autenticación) ==========
-                        // Cualquiera puede registrarse y hacer login
-                        .requestMatchers("/api/auth/**").permitAll()
+                        // Autenticación: Registro y Login
+                        .requestMatchers("/api/auth/register").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
 
-                        // Cualquiera puede ver productos y categorías (solo lectura)
-                        .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()
+                        // Productos: Solo lectura para todos (GET)
+                        .requestMatchers(HttpMethod.GET, "/api/productos").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/productos/{id}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/productos/categoria/{categoryId}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/productos/buscar").permitAll()
+
+                        // Categorías: Solo lectura para todos (GET)
+                        .requestMatchers(HttpMethod.GET, "/api/categorias").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categorias/{id}").permitAll()
 
                         // ========== ENDPOINTS SOLO PARA ADMINISTRADORES ==========
-                        // Solo los ADMIN pueden acceder a rutas que empiecen con /api/admin
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // Productos: Crear, actualizar y eliminar (solo ADMIN)
+                        .requestMatchers(HttpMethod.POST, "/api/productos").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/productos/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/productos/{id}").hasRole("ADMIN")
 
-                        // Solo los ADMIN pueden eliminar productos
-                        .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
+                        // Categorías: Crear, actualizar y eliminar (solo ADMIN)
+                        .requestMatchers(HttpMethod.POST, "/api/categorias").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/categorias/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/categorias/{id}").hasRole("ADMIN")
 
                         // ========== ENDPOINTS PARA USUARIOS AUTENTICADOS ==========
-                        // Usuarios autenticados pueden crear y editar productos
-                        .requestMatchers(HttpMethod.POST, "/api/productos").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/productos/**").authenticated()
-
-                        // Usuarios autenticados pueden gestionar pedidos
-                        .requestMatchers("/api/pedidos/**").authenticated()
-
-                        // Usuarios autenticados pueden gestionar categorías
-                        .requestMatchers(HttpMethod.POST, "/api/categorias").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/categorias/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/categorias/**").hasRole("ADMIN")
+                        // Pedidos: Crear pedido (checkout) y consultar pedidos
+                        .requestMatchers(HttpMethod.POST, "/api/pedidos/checkout").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/pedidos/{id}").authenticated()
 
                         // ========== CUALQUIER OTRA RUTA ==========
                         // Por defecto, cualquier otra ruta requiere autenticación
@@ -89,7 +92,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173")); // tu frontend
+        config.setAllowedOrigins(List.of("http://localhost:5173", "https://127.0.0.1:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

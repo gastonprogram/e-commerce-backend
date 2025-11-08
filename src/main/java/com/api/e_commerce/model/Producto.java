@@ -47,7 +47,7 @@ public class Producto {
     // Usuario que creó/publica el producto
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
-    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "contrasena" })
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "password", "pedidos" })
     private Usuario usuario;
 
     // Override equals y hashCode para evitar problemas con lazy loading
