@@ -1,4 +1,4 @@
-package com.api.e_commerce.dto;
+package com.api.e_commerce.dto.pedido;
 
 /**
  * DTO que representa un item del carrito de compras.

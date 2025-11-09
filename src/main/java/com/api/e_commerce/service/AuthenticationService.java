@@ -8,15 +8,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.api.e_commerce.dto.LoginRequest;
-import com.api.e_commerce.dto.RegisterRequest;
+import com.api.e_commerce.dto.auth.LoginRequest;
+import com.api.e_commerce.dto.auth.RegisterRequest;
+import com.api.e_commerce.exception.EmailDuplicadoException;
 import com.api.e_commerce.model.Role;
 import com.api.e_commerce.model.Usuario;
 import com.api.e_commerce.repository.UsuarioRepository;
 import com.api.e_commerce.security.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
-
 
 import java.util.stream.Collectors;
 
@@ -33,8 +33,7 @@ public class AuthenticationService {
     public String register(RegisterRequest request) {
 
         if (usuarioRepository.existsByEmail(request.getEmail())) {
-            //TODO: ssanchez - crear exception personalizada EmailException y manejar con @ControllerAdvice
-            throw new RuntimeException("Email already exists");
+            throw new EmailDuplicadoException(request.getEmail());
         }
 
         // Crear un nuevo usuario con los datos del request
@@ -46,9 +45,9 @@ public class AuthenticationService {
         // usuario.setPassword(passwordEncoder.encode(request.getPassword()));
         // usuario.setRole(Role.USER);
 
-
-        //viene de Lombok (@Builder) y facilita la creación de objetos de manera más limpia y fluida
-        //builder me ahorra tener que usar el new Usuario() y los setters y getters
+        // viene de Lombok (@Builder) y facilita la creación de objetos de manera más
+        // limpia y fluida
+        // builder me ahorra tener que usar el new Usuario() y los setters y getters
         Usuario usuario = Usuario.builder()
                 .nombre(request.getNombre())
                 .apellido(request.getApellido())
@@ -58,7 +57,6 @@ public class AuthenticationService {
                 .role(Role.USER) // Por defecto, todos los usuarios nuevos son USER
                 .build();
 
-
         usuarioRepository.save(usuario);
         return "User registered successfully";
     }
@@ -66,18 +64,20 @@ public class AuthenticationService {
     /**
      * AuthenticationManager:
      * - Se configura en SecurityConfig usando AuthenticationConfiguration
-     * - Spring Boot autoconfigura el AuthenticationManager con UserDetailsService y PasswordEncoder
+     * - Spring Boot autoconfigura el AuthenticationManager con UserDetailsService y
+     * PasswordEncoder
      * - Gestiona el proceso de autenticación completo
      * 
      * UsernamePasswordAuthenticationToken:
      * - representa las credenciales del usuario
      * - Se usa para el proceso de autenticación básica username/password
      * 
-     *  Este token no autenticado se pasa al authenticationManager, que:
+     * Este token no autenticado se pasa al authenticationManager, que:
      * - Valida las credenciales contra la base de datos
      * - Verifica la contraseña usando el PasswordEncoder
-     * - Si todo es correcto, crea un nuevo token autenticado con los roles/authorities del usuario
-     *  
+     * - Si todo es correcto, crea un nuevo token autenticado con los
+     * roles/authorities del usuario
+     * 
      *
      */
     public String authenticate(LoginRequest request) {
@@ -92,7 +92,7 @@ public class AuthenticationService {
                 .map(grantedAuthority -> grantedAuthority.getAuthority())
                 .collect(Collectors.toSet());
 
-        //  envío al cliente del token JWT
+        // envío al cliente del token JWT
         return jwtUtil.generateToken(user.getEmail(), roles);
     }
 }

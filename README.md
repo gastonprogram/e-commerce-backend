@@ -8,10 +8,10 @@ Proyecto de e-commerce realizado en **React**, desarrollado como parte de la mat
 
 Esta aplicación simula una **tienda online moderna y funcional**, permitiendo a los usuarios:
 
-- Navegar productos  
-- Agregarlos al carrito  
-- Finalizar compras con validación de stock  
-- Usar cupones de descuento  
+- Navegar productos
+- Agregarlos al carrito
+- Finalizar compras con validación de stock
+- Usar cupones de descuento
 
 El objetivo principal es aplicar los conocimientos adquiridos en la materia, con foco en la experiencia de usuario, la interacción y el diseño de interfaces dinámicas.
 
@@ -19,24 +19,24 @@ El objetivo principal es aplicar los conocimientos adquiridos en la materia, con
 
 ## ⭐ Funcionalidades principales
 
-- 🔍 Búsqueda y filtrado de productos por categoría  
-- 🛒 Carrito persistente con gestión de cantidades  
-- 💰 Sistema de cupones de descuento  
-- 📦 Control de stock automático  
-- 🔐 Autenticación de usuarios  
-- ⚙️ Panel admin para gestión de productos  
-- 🎨 Interfaz responsive y moderna  
+- 🔍 Búsqueda y filtrado de productos por categoría
+- 🛒 Carrito persistente con gestión de cantidades
+- 💰 Sistema de cupones de descuento
+- 📦 Control de stock automático
+- 🔐 Autenticación de usuarios
+- ⚙️ Panel admin para gestión de productos
+- 🎨 Interfaz responsive y moderna
 
 ---
 
 ## 🚀 Tecnologías utilizadas
 
-- ⚛️ React 18 – Framework principal  
-- ⚡ Vite 5 – Build tool y dev server  
-- 🎨 CSS – Módulos y estilos propios  
-- 🛣️ React Router DOM – Navegación  
-- 📦 JSON Server – Simulación de backend  
-- ✅ ESLint – Linting de código  
+- ⚛️ React 18 – Framework principal
+- ⚡ Vite 5 – Build tool y dev server
+- 🎨 CSS – Módulos y estilos propios
+- 🛣️ React Router DOM – Navegación
+- 📦 JSON Server – Simulación de backend
+- ✅ ESLint – Linting de código
 
 ---
 
@@ -60,17 +60,15 @@ ecommerce-app/
 ├── package.json
 └── README.md
 
-
-
 ---
 
 ## 🖥️ Pantallas principales
 
-- 🏠 **Home / Catálogo** → listado de productos y búsqueda  
-- 📄 **Detalle de producto** → información ampliada + agregar al carrito  
-- 🛒 **Carrito** → gestión de cantidades, cupones y total  
-- 💳 **Checkout** → confirmación de compra, actualización de stock y limpieza automática del carrito  
-- 🔐 **Admin** → gestión de productos (crear, editar, eliminar)  
+- 🏠 **Home / Catálogo** → listado de productos y búsqueda
+- 📄 **Detalle de producto** → información ampliada + agregar al carrito
+- 🛒 **Carrito** → gestión de cantidades, cupones y total
+- 💳 **Checkout** → confirmación de compra, actualización de stock y limpieza automática del carrito
+- 🔐 **Admin** → gestión de productos (crear, editar, eliminar)
 
 ---
 
@@ -80,30 +78,27 @@ ecommerce-app/
    ```bash
    git clone https://github.com/gastonprogram/ecommerce-app.git
    cd ecommerce-app
-Instalar dependencias:
-
+   Instalar dependencias:
+   ```
 
 npm install
 Levantar el frontend:
-
-
 
 npm run dev
 👉 Disponible en: http://localhost:5173
 
 Levantar el backend simulado (JSON Server):
 
-
 npx json-server --watch db.json --port 3000
 👉 Disponible en: http://localhost:3000
 
 ## 🛠️ Troubleshooting
+
 ⚠️ Puerto 5173 ocupado
 Vite avisará y usará otro (ej: 5174). Accede a la URL que indique en consola.
 
 ⚠️ Puerto 3000 ocupado
 JSON Server no iniciará. Cerrá la app que use ese puerto o elegí otro:
-
 
 npx json-server --watch db.json --port 3001
 ⚠️ Error “export default not found”
@@ -111,7 +106,6 @@ Revisar que los contextos (AuthProvider, CartProvider) estén exportados e impor
 
 ⚠️ Problemas con dependencias
 Si hay conflictos, reinstalar dependencias:
-
 
 rm -rf node_modules package-lock.json
 npm install
@@ -139,6 +133,7 @@ Santino Castro → Carrito de compras y cupones de descuento
 Pedro Scotti → Proceso de checkout (validación de stock, vaciar carrito, feedback al usuario)
 
 ## 🎓 Contexto académico
+
 Este proyecto fue creado como trabajo práctico para la materia Aplicaciones Interactivas en la Universidad Argentina de la Empresa (UADE), poniendo en práctica conceptos de:
 
 Desarrollo frontend con React
@@ -152,6 +147,7 @@ Experiencia de usuario (UX/UI)
 Trabajo colaborativo en equipo
 
 ## 💡 Próximas mejoras
+
 🔗 Integración con un backend real y base de datos persistente
 
 🔐 Autenticación completa con JWT
@@ -165,10 +161,11 @@ Trabajo colaborativo en equipo
 💳 Integración con gateway de pagos
 
 🤝 Autores
+
 - **Pedro [PeppoScotti](https://github.com/PeppoScotti)**
 - **Gaston [gastonprogram](https://github.com/gastonprogram)**
 - **Santino [SantinoCastro](https://github.com/Gusabelu1)**
 - **Maximo [MaximoLopezMelgarejo](https://github.com/maximolopezmelgarejo)**
 - **Juan [JuanLi](https://github.com/Juanli255)**
-- **Valentina [Valentina](https://github.com/deleonvalentina)** 
+- **Valentina [Valentina](https://github.com/deleonvalentina)**
 - **Luciano [lverdini](https://github.com/lverdini)**

@@ -1,4 +1,4 @@
-package com.api.e_commerce.dto;
+package com.api.e_commerce.dto.pedido;
 
 import com.api.e_commerce.model.Pedido;
 import com.api.e_commerce.model.PedidoDetalle;
