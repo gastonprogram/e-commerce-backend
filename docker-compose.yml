@@ -1,6 +1,4 @@
 # Especifica la versión de Docker Compose a utilizar (3.8 es una versión moderna con todas las características necesarias)
-version: '3.8'
-
 # Define los servicios (contenedores) que componen nuestra aplicación
 services:
   # Servicio de la aplicación Spring Boot (backend)

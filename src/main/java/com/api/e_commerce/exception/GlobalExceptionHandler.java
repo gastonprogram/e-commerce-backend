@@ -24,9 +24,34 @@ public class GlobalExceptionHandler {
 
     }
 
+    @ExceptionHandler(CategoriaNotFoundException.class)
+    public ResponseEntity<String> manejarCategoriaNoEncontrada(CategoriaNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
     @ExceptionHandler(PrecioNegativoException.class)
     public ResponseEntity<String> manejarPrecioNegativo(PrecioNegativoException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(StockInsuficienteException.class)
+    public ResponseEntity<String> manejarStockInsuficiente(StockInsuficienteException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(CategoriaDuplicadaException.class)
+    public ResponseEntity<String> manejarCategoriaDuplicada(CategoriaDuplicadaException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(EmailDuplicadoException.class)
+    public ResponseEntity<String> manejarEmailDuplicado(EmailDuplicadoException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ProductoEnPedidosException.class)
+    public ResponseEntity<String> manejarProductoEnPedidos(ProductoEnPedidosException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
